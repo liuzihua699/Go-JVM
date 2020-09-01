@@ -7,52 +7,58 @@ import (
 )
 
 type Cmd struct {
-	helpFlag    bool
-	versionFlag bool
-	classPath   string
-	class       string
-	args        []string
-	authorFlag  bool
-	modeFlag    bool
-	globalFlag  bool
+	helpFlag      bool
+	versionFlag   bool
+	classPath     string
+	class         string
+	args          []string
+	authorFlag    bool
+	modeFlag      bool
+	globalFlag    bool
+	bootClassPath string
+	extClassPath  string
 }
 
 // inject global config
-var global_config JVMOption = getJVMOptions()
+var GLOBAL_CONFIG JVMOption = getJVMOptions()
 
 func (c *Cmd) parseCmd() {
 
 	flag.Usage = c.printUsage
 	flag.BoolVar(&c.helpFlag, "help", false, "print help message")
 	flag.BoolVar(&c.helpFlag, "?", false, "print help message")
+
 	flag.BoolVar(&c.authorFlag, "author", false, "please author")
 	flag.BoolVar(&c.versionFlag, "version", false, "print version")
 	flag.BoolVar(&c.versionFlag, "v", false, "print version")
-	flag.StringVar(&c.classPath, "classpath", "", "classpath")
-	flag.StringVar(&c.classPath, "cp", "", "classpath")
 	flag.BoolVar(&c.modeFlag, "mode", false, "print current mode")
 	flag.BoolVar(&c.modeFlag, "m", false, "print current mode")
 	flag.BoolVar(&c.globalFlag, "global_config", false, " print global config")
+
+	flag.StringVar(&c.classPath, "classpath", USER_CLASS_PATH, "classpath")
+	flag.StringVar(&c.classPath, "cp", USER_CLASS_PATH, "classpath")
+	flag.StringVar(&c.bootClassPath, "Xbootclasspath", BOOTSTRAPE_CLASS_PATH, "print bootstrape classpath")
+	flag.StringVar(&c.extClassPath, "Xextclasspath", EXT_CLASS_PATH, "print extension classpath")
 	flag.Parse()
 	args := flag.Args()
 
 	if c.versionFlag {
-		fmt.Printf("Version for %s\n", global_config.version)
+		fmt.Printf("Version for %s\n", GLOBAL_CONFIG.version)
 		os.Exit(0)
 	} else if c.helpFlag {
 		c.printUsage()
 		os.Exit(0)
 	} else if c.authorFlag {
-		fmt.Printf("author: %s\n", global_config.author)
+		fmt.Printf("author: %s\n", GLOBAL_CONFIG.author)
 		os.Exit(0)
 	} else if c.modeFlag {
-		fmt.Printf("mode: %s\n", global_config.mode)
+		fmt.Printf("mode: %s\n", GLOBAL_CONFIG.mode)
 		os.Exit(0)
 	} else if c.globalFlag {
-		fmt.Printf("author: %s\n", global_config.author)
-		fmt.Printf("Version for %s\n", global_config.version)
-		fmt.Printf("mode: %s\n", global_config.mode)
-		fmt.Printf("time: %s\n", global_config.time)
+		fmt.Printf("author: %s\n", GLOBAL_CONFIG.author)
+		fmt.Printf("Version for %s\n", GLOBAL_CONFIG.version)
+		fmt.Printf("mode: %s\n", GLOBAL_CONFIG.mode)
+		fmt.Printf("time: %s\n", GLOBAL_CONFIG.time)
 		os.Exit(0)
 	}
 
@@ -80,9 +86,10 @@ func (c *Cmd) startJVM() {
 
 	c.parseCmd()
 
-	fmt.Printf("classpath: %s \nclass: %s\nargs:%v\n",
-		c.classPath, c.class, c.args)
+	fmt.Printf("bootclasspath: %s\nextclasspath: %s\nclasspath: %s \nclass: %s\nargs:%v\n",
+		c.bootClassPath, c.extClassPath, c.classPath, c.class, c.args)
 
-	// 检查JVM启动参数
-	// checkOption();
+	// TODO. 检查启动参数[classpath, class]是否合法
+	// checkOptionPoint(c);
+
 }

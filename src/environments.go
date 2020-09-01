@@ -1,5 +1,9 @@
 package main
 
+import (
+	"os"
+)
+
 type JVMOption struct {
 	author  string // 作者
 	version string // 版本号
@@ -15,6 +19,11 @@ const (
 	test State = "mode" // 测试状态
 )
 
+var JRE = getDefaultClassPath()
+var BOOTSTRAPE_CLASS_PATH = JRE + "\\jre\\lib"
+var EXT_CLASS_PATH = BOOTSTRAPE_CLASS_PATH + "\\ext"
+var USER_CLASS_PATH = "."
+
 func getJVMOptions() JVMOption {
 	return JVMOption{
 		author:  "zihua",
@@ -26,7 +35,8 @@ func getJVMOptions() JVMOption {
 
 /**
 get classpath for system env.
+e.g JAVA_HOME/
 */
-func getDefaultClassPath() {
-
+func getDefaultClassPath() string {
+	return os.Getenv("JAVA_HOME")
 }
