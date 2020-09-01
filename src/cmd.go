@@ -13,6 +13,8 @@ type Cmd struct {
 	class       string
 	args        []string
 	authorFlag  bool
+	modeFlag    bool
+	globalFlag  bool
 }
 
 // inject global config
@@ -25,8 +27,12 @@ func (c *Cmd) parseCmd() {
 	flag.BoolVar(&c.helpFlag, "?", false, "print help message")
 	flag.BoolVar(&c.authorFlag, "author", false, "please author")
 	flag.BoolVar(&c.versionFlag, "version", false, "print version")
+	flag.BoolVar(&c.versionFlag, "v", false, "print version")
 	flag.StringVar(&c.classPath, "classpath", "", "classpath")
 	flag.StringVar(&c.classPath, "cp", "", "classpath")
+	flag.BoolVar(&c.modeFlag, "mode", false, "print current mode")
+	flag.BoolVar(&c.modeFlag, "m", false, "print current mode")
+	flag.BoolVar(&c.globalFlag, "global_config", false, " print global config")
 	flag.Parse()
 	args := flag.Args()
 
@@ -38,6 +44,15 @@ func (c *Cmd) parseCmd() {
 		os.Exit(0)
 	} else if c.authorFlag {
 		fmt.Printf("author: %s\n", global_config.author)
+		os.Exit(0)
+	} else if c.modeFlag {
+		fmt.Printf("mode: %s\n", global_config.mode)
+		os.Exit(0)
+	} else if c.globalFlag {
+		fmt.Printf("author: %s\n", global_config.author)
+		fmt.Printf("Version for %s\n", global_config.version)
+		fmt.Printf("mode: %s\n", global_config.mode)
+		fmt.Printf("time: %s\n", global_config.time)
 		os.Exit(0)
 	}
 
