@@ -12,25 +12,32 @@ type Cmd struct {
 	classPath   string
 	class       string
 	args        []string
+	authorFlag  bool
 }
 
-func (c *Cmd) parseCmd() *Cmd {
-	var cmd = &Cmd{}
+// inject global config
+var global_config JVMOption = getJVMOptions()
+
+func (c *Cmd) parseCmd() {
 
 	flag.Usage = c.printUsage
-	flag.BoolVar(&cmd.helpFlag, "help", false, "print help message")
-	flag.BoolVar(&cmd.helpFlag, "?", false, "print help message")
-	flag.BoolVar(&cmd.versionFlag, "version", false, "print version")
-	flag.StringVar(&cmd.classPath, "classpath", "", "classpath")
-	flag.StringVar(&cmd.classPath, "cp", "", "classpath")
+	flag.BoolVar(&c.helpFlag, "help", false, "print help message")
+	flag.BoolVar(&c.helpFlag, "?", false, "print help message")
+	flag.BoolVar(&c.authorFlag, "author", false, "please author")
+	flag.BoolVar(&c.versionFlag, "version", false, "print version")
+	flag.StringVar(&c.classPath, "classpath", "", "classpath")
+	flag.StringVar(&c.classPath, "cp", "", "classpath")
 	flag.Parse()
 	args := flag.Args()
 
-	if cmd.versionFlag {
-		fmt.Println("Version for 0.1.")
+	if c.versionFlag {
+		fmt.Printf("Version for %s\n", global_config.version)
 		os.Exit(0)
-	} else if cmd.helpFlag {
+	} else if c.helpFlag {
 		c.printUsage()
+		os.Exit(0)
+	} else if c.authorFlag {
+		fmt.Printf("author: %s\n", global_config.author)
 		os.Exit(0)
 	}
 
@@ -39,9 +46,8 @@ func (c *Cmd) parseCmd() *Cmd {
 		os.Exit(0)
 	}
 
-	cmd.class = args[0]
-	cmd.args = args[1:]
-	return cmd
+	c.class = args[0]
+	c.args = args[1:]
 }
 
 func (c *Cmd) printUsage() {
@@ -49,14 +55,19 @@ func (c *Cmd) printUsage() {
 }
 
 func (c *Cmd) printNoArgument() {
-	fmt.Println("You has no argument, please inpu [-help] or [-?] watch command line.")
+	fmt.Println("You has no argument, please input [-help] or [-?] watch help.")
 }
 
 /**
 start the jvm
 */
 func (c *Cmd) startJVM() {
-	var cmd = c.parseCmd()
+
+	c.parseCmd()
+
 	fmt.Printf("classpath: %s \nclass: %s\nargs:%v\n",
-		cmd.classPath, cmd.class, cmd.args)
+		c.classPath, c.class, c.args)
+
+	// 检查JVM启动参数
+	// checkOption();
 }
