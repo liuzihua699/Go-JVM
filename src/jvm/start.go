@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"jvm/classloader"
 	"os"
 )
 
@@ -81,19 +82,39 @@ func (c *Cmd) printNoArgument() {
 }
 
 /**
-start the jvm
+start the main
 */
 func startJVM() {
-	// TODO.1. 转化
 	options := new(Cmd).parseCmd()
-
-	// TODO.2. 检查启动参数[classloader, class]是否合法
-	// checkOptionPoint(options);
-	// parseOptions(options)
-
-	// TODO.3. 根据配置启动JVM
 	fmt.Printf("bootclasspath: %s\nextclasspath: %s\nclasspath: %s \nclass: %s\nargs:%v\n",
 		options.bootClassPath, options.extClassPath, options.classPath, options.class, options.args)
+
+	// TODO.1 检查启动参数[classloader, class]是否合法
+	// checkOptionPoint(options);
+
+	loader := new(classloader.ClassPath)
+	loader.BootClassLoader = classloader.CreateWildcardLoader(options.bootClassPath)
+	loader.ExtClassLoader = classloader.CreateWildcardLoader(options.extClassPath)
+	loader.UserClassLoader = classloader.CreateWildcardLoader(options.classPath)
+
+	// TODO.2 可以尝试先缓存部分类，减轻类加载的压力
+
+	var stream []byte
+	var err error
+
+	// 类加载
+	stream, _, err = loader.BootClassLoader.LoadClass(options.class)
+	if err != nil {
+		stream, _, err = loader.ExtClassLoader.LoadClass(options.class)
+		if err != nil {
+			stream, _, err = loader.UserClassLoader.LoadClass(options.class)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+
+	fmt.Println(stream)
 }
 
 func main() {
