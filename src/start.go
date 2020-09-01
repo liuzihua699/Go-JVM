@@ -9,12 +9,12 @@ import (
 type Cmd struct {
 	helpFlag      bool
 	versionFlag   bool
-	classPath     string
-	class         string
-	args          []string
 	authorFlag    bool
 	modeFlag      bool
 	globalFlag    bool
+	args          []string
+	classPath     string
+	class         string
 	bootClassPath string
 	extClassPath  string
 }
@@ -22,7 +22,7 @@ type Cmd struct {
 // inject global config
 var GLOBAL_CONFIG JVMOption = getJVMOptions()
 
-func (c *Cmd) parseCmd() {
+func (c *Cmd) parseCmd() *Cmd {
 
 	flag.Usage = c.printUsage
 	flag.BoolVar(&c.helpFlag, "help", false, "print help message")
@@ -35,10 +35,10 @@ func (c *Cmd) parseCmd() {
 	flag.BoolVar(&c.modeFlag, "m", false, "print current mode")
 	flag.BoolVar(&c.globalFlag, "global_config", false, " print global config")
 
-	flag.StringVar(&c.classPath, "classpath", USER_CLASS_PATH, "classpath")
-	flag.StringVar(&c.classPath, "cp", USER_CLASS_PATH, "classpath")
-	flag.StringVar(&c.bootClassPath, "Xbootclasspath", BOOTSTRAPE_CLASS_PATH, "print bootstrape classpath")
-	flag.StringVar(&c.extClassPath, "Xextclasspath", EXT_CLASS_PATH, "print extension classpath")
+	flag.StringVar(&c.classPath, "classloader", USER_CLASS_PATH, "classloader")
+	flag.StringVar(&c.classPath, "cp", USER_CLASS_PATH, "classloader")
+	flag.StringVar(&c.bootClassPath, "Xbootclasspath", BOOTSTRAPE_CLASS_PATH, "print bootstrape classloader")
+	flag.StringVar(&c.extClassPath, "Xextclasspath", EXT_CLASS_PATH, "print extension classloader")
 	flag.Parse()
 	args := flag.Args()
 
@@ -69,6 +69,7 @@ func (c *Cmd) parseCmd() {
 
 	c.class = args[0]
 	c.args = args[1:]
+	return c
 }
 
 func (c *Cmd) printUsage() {
@@ -82,14 +83,19 @@ func (c *Cmd) printNoArgument() {
 /**
 start the jvm
 */
-func (c *Cmd) startJVM() {
+func startJVM() {
+	// TODO.1. 转化
+	options := new(Cmd).parseCmd()
 
-	c.parseCmd()
+	// TODO.2. 检查启动参数[classloader, class]是否合法
+	// checkOptionPoint(options);
+	// parseOptions(options)
 
+	// TODO.3. 根据配置启动JVM
 	fmt.Printf("bootclasspath: %s\nextclasspath: %s\nclasspath: %s \nclass: %s\nargs:%v\n",
-		c.bootClassPath, c.extClassPath, c.classPath, c.class, c.args)
+		options.bootClassPath, options.extClassPath, options.classPath, options.class, options.args)
+}
 
-	// TODO. 检查启动参数[classpath, class]是否合法
-	// checkOptionPoint(c);
-
+func main() {
+	startJVM()
 }

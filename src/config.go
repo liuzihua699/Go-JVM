@@ -13,28 +13,29 @@ type JVMOption struct {
 
 type State string
 
-const (
-	dev  State = "dev"  // 开发状态
-	prod State = "prod" // 发布状态
-	test State = "mode" // 测试状态
-)
+const dev State = "dev"   // 开发状态
+const prod State = "prod" // 发布状态
+const test State = "mode" // 测试状态
 
 var JRE = getDefaultClassPath()
 var BOOTSTRAPE_CLASS_PATH = JRE + "\\jre\\lib"
 var EXT_CLASS_PATH = BOOTSTRAPE_CLASS_PATH + "\\ext"
 var USER_CLASS_PATH = "."
 
+/**
+global config
+*/
 func getJVMOptions() JVMOption {
 	return JVMOption{
 		author:  "zihua",
 		version: "0.0.2",
-		time:    "2020/8/31",
+		time:    "2020/9/1",
 		mode:    dev,
 	}
 }
 
 /**
-get classpath for system env.
+get classloader for system env.
 e.g JAVA_HOME/
 */
 func getDefaultClassPath() string {
