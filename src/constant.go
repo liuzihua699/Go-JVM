@@ -18,7 +18,7 @@ const (
 func getJVMOptions() JVMOption {
 	return JVMOption{
 		author:  "zihua",
-		version: "0.0.1",
+		version: "0.0.2",
 		time:    "2020/8/31",
 		mode:    dev,
 	}
