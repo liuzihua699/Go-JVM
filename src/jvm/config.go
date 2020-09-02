@@ -28,8 +28,8 @@ global config
 func getJVMOptions() JVMOption {
 	return JVMOption{
 		author:  "zihua",
-		version: "0.0.2",
-		time:    "2020/9/1",
+		version: "0.0.3",
+		time:    "2020/9/2",
 		mode:    dev,
 	}
 }
