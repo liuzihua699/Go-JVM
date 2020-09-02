@@ -21,7 +21,7 @@ type Cmd struct {
 }
 
 // inject global config
-var GLOBAL_CONFIG JVMOption = getJVMOptions()
+var GLOBAL_CONFIG = getJVMOptions()
 
 func (c *Cmd) parseCmd() *Cmd {
 
@@ -82,39 +82,47 @@ func (c *Cmd) printNoArgument() {
 }
 
 /**
-start the main
+开始类加载，它有3个主要阶段：
+	1. 加载
+	2. 解析
+	3. 初始化
+检查参数、构建类加载器都是加载阶段、读取类的二进制码都属于加载阶段，目前正在实现
 */
 func startJVM() {
 	options := new(Cmd).parseCmd()
 	fmt.Printf("bootclasspath: %s\nextclasspath: %s\nclasspath: %s \nclass: %s\nargs:%v\n",
 		options.bootClassPath, options.extClassPath, options.classPath, options.class, options.args)
 
-	// TODO.1 检查启动参数[classloader, class]是否合法
+	// TODO 检查启动参数[classloader, class]是否合法
 	// checkOptionPoint(options);
 
+	// TODO 1.加载阶段
 	loader := new(classloader.ClassPath)
-	loader.BootClassLoader = classloader.CreateWildcardLoader(options.bootClassPath)
-	loader.ExtClassLoader = classloader.CreateWildcardLoader(options.extClassPath)
-	loader.UserClassLoader = classloader.CreateWildcardLoader(options.classPath)
+	loader.BootClassLoader = classloader.CreateLoader(options.bootClassPath + "\\*")
+	loader.ExtClassLoader = classloader.CreateLoader(options.extClassPath + "\\*")
+	loader.UserClassLoader = classloader.CreateLoader(options.classPath)
 
-	// TODO.2 可以尝试先缓存部分类，减轻类加载的压力
+	var (
+		stream     []byte
+		baseloader classloader.ClassLoader
+		err        error
+	)
 
-	var stream []byte
-	var err error
-
-	// 类加载
-	stream, _, err = loader.BootClassLoader.LoadClass(options.class)
+	// 父委派机制的类加载实现
+	stream, baseloader, err = loader.BootClassLoader.LoadClass(options.class)
 	if err != nil {
-		stream, _, err = loader.ExtClassLoader.LoadClass(options.class)
+		stream, baseloader, err = loader.ExtClassLoader.LoadClass(options.class)
 		if err != nil {
-			stream, _, err = loader.UserClassLoader.LoadClass(options.class)
+			stream, baseloader, err = loader.UserClassLoader.LoadClass(options.class)
 			if err != nil {
 				panic(err)
 			}
 		}
 	}
 
+	// .TODO 2.进入解析阶段
 	fmt.Println(stream)
+	fmt.Println(baseloader.ToString())
 }
 
 func main() {
