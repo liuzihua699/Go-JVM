@@ -81,3 +81,4 @@ ClassLoader接受一个类的全限定名，然后加载返回这个类的字节
 之前提到过，遍历路径由启动类路径、扩展类路径和用户类路径组成，如果我想根据某个类的全限定名加载这个类，那么需要通配符加载这些路径下的所有的路径，并判断是否存在基础类，比如java/lang/String。
 
 ## 2.3 双亲委派机制的实现？
+BootClassLoader->ExtClassLoader->UserClassLoader
