@@ -1,14 +1,15 @@
-package main
+package commons
 
 import (
 	"os"
 )
 
 type JVMOption struct {
-	author  string // 作者
-	version string // 版本号
-	time    string // 发布日期
-	mode    State  // 模式
+	Author     string // 作者
+	Version    string // 版本号
+	Start_time string // 开始日期
+	Last_time  string // 发布日期
+	Mode       State  // 模式
 }
 
 type State string
@@ -22,15 +23,19 @@ var BOOTSTRAPE_CLASS_PATH = JRE + "\\jre\\lib"
 var EXT_CLASS_PATH = BOOTSTRAPE_CLASS_PATH + "\\ext"
 var USER_CLASS_PATH = "."
 
+// inject global config
+var GLOBAL_CONFIG = GetJVMOptions()
+
 /**
 global config
 */
-func getJVMOptions() JVMOption {
+func GetJVMOptions() JVMOption {
 	return JVMOption{
-		author:  "zihua",
-		version: "0.0.3",
-		time:    "2020/9/2",
-		mode:    dev,
+		Author:     "zihua",
+		Version:    "0.0.4",
+		Start_time: "2020/8/31",
+		Last_time:  "2020/9/3",
+		Mode:       dev,
 	}
 }
 
