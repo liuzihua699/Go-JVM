@@ -18,9 +18,12 @@ const dev State = "dev"   // 开发状态
 const prod State = "prod" // 发布状态
 const test State = "mode" // 测试状态
 
-var JRE = getDefaultClassPath()
-var BOOTSTRAPE_CLASS_PATH = JRE + "\\jre\\lib"
-var EXT_CLASS_PATH = BOOTSTRAPE_CLASS_PATH + "\\ext"
+const SEPARATOR = string(os.PathSeparator)
+
+var JDK = getDefaultClassPath()
+var JRE = JDK + SEPARATOR + "jre"
+var BOOTSTRAPE_CLASS_PATH = JRE + SEPARATOR + "lib"
+var EXT_CLASS_PATH = BOOTSTRAPE_CLASS_PATH + SEPARATOR + "ext"
 var USER_CLASS_PATH = "."
 
 // inject global config
