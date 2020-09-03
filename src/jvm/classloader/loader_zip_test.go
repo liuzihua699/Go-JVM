@@ -60,15 +60,10 @@ func TestZipClassLoader_LoadClass(t *testing.T) {
 		{
 			name: "2",
 			path: "C:\\Program Files\\Java\\jdk1.8.0_161\\jre\\lib\\rt.jar",
-			args: args{className: "java.lang.String"},
-		},
-		{
-			name: "3",
-			path: "C:\\Program Files\\Java\\jdk1.8.0_161\\jre\\lib\\rt.jar",
 			args: args{className: "java.lang.zihua"},
 		},
 		{
-			name: "4",
+			name: "3",
 			path: "C:\\Program Files\\Java\\jdk1.8.0_161\\jre\\lib\\aaa.jar",
 			args: args{className: "java.lang.String"},
 		},

@@ -37,7 +37,7 @@ func TestComClassLoader_LoadClass(t *testing.T) {
 		{
 			name:     "3",
 			args:     args{className: "java.lang.String"},
-			pathList: "a;b;c;T:\\\\jvm-test;d",
+			pathList: "a;b;c;T:\\\\jvm-test;d;T:\\jvm-test\\*",
 		},
 		{
 			name:     "4",
@@ -111,7 +111,7 @@ func TestCreateCompositeLoader(t *testing.T) {
 		// TODO: Add test cases.
 		{
 			name: "1",
-			args: args{pathList: "a;b;c;T:\\\\jvm-test;d"},
+			args: args{pathList: "a;b;c;T:\\jvm-test;d"},
 		},
 		{
 			name: "2",
@@ -120,6 +120,10 @@ func TestCreateCompositeLoader(t *testing.T) {
 		{
 			name: "3",
 			args: args{pathList: "a;b;c;T:\\\\jvm-test;d;C:\\Program Files\\Java\\jdk1.8.0_161\\jre\\lib\\rt.jar"},
+		},
+		{
+			name: "4",
+			args: args{pathList: ""},
 		},
 	}
 	for _, tt := range tests {
