@@ -20,7 +20,7 @@ func CreateZipLoader(path string) *ZipClassLoader {
 	}
 	_, err = os.Stat(absZipPath)
 	if err != nil || os.IsNotExist(err) {
-		panic(err)
+		panic(errors.New("the file has not exits."))
 	}
 	if !(strings.HasSuffix(path, ".zip") || strings.HasSuffix(path, ".ZIP") ||
 		strings.HasSuffix(path, ".jar") || strings.HasSuffix(path, ".JAR")) {
