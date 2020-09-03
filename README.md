@@ -15,6 +15,8 @@
 
 设计完成
 
+(等到1.0版本开发完毕就会发布releases和tag)
+
 # 2. 类加载功能的设计
 ## 2.1 类加载器的设计
 ### 参数规范
@@ -68,7 +70,7 @@ ClassLoader接受一个类的全限定名，然后加载返回这个类的字节
 1. dir_loader
 2. com_loader->dir_loader
 3. zip_loader
-4. wild_loader->(zip_loader | dir_loader)
+4. wild_loader->(zip_loader + dir_loader)
 
 先设计dir_loader，然后再是com_loader和zip_loader，最后是wild_loader
 
@@ -221,11 +223,34 @@ WildcardClassLoader会扫描目录并加载类。
 
 ```
 
-## 2.2 加载基础类(classpath)
-之前提到过，遍历路径由启动类路径、扩展类路径和用户类路径组成，如果我想根据某个类的全限定名加载这个类，那么需要通配符加载这些路径下的所有的路径，并判断是否存在基础类，比如java/lang/String。
+## 2.2 整体加载流程
+遍历路径由启动类路径、扩展类路径和用户类路径组成，如果我想根据某个类的全限定名加载这个类，那么需要通配符加载这些路径下的所有的路径，并判断是否存在基础类，比如java/lang/String。
+
+所以最终的加载公式为：
+
+```
+composite(wildcard("%JAVA_HOME%/jre/lib"), wildcard("%JAVA_HOME%/jre/lib/ext"), dir("%classpath%"))
+```
+
+0.0.3版本的程序通过了如下测试(已在程序中打包)：
+
+
+加载参数 | 测试描述 | 预期结果 | 是否通过
+---|---|---|---
+-cp T:\\jvm-test HelloWorld | 类放至boot、ext、user目录下 | 使用BootClassLoader加载该类 | √
+-cp T:\\jvm-test HelloWorld | 类放至ext、user目录下 | 使用ExtClassLoader加载该类 | √
+-cp T:\\jvm-test HelloWorld | 类放至user目录下 | 使用UserClassLoader加载该类 | √
+-cp T:\\jvm-test java.lang.String | rt.jar放至boot、ext、user目录下 | 使用BootClassLoader加载该类 | √
+-cp T:\\jvm-test java.lang.String | rt.jar放至ext、user目录下 | 使用ExtClassLoader加载该类 | √
+-cp T:\\jvm-test java.lang.String | String.class放至user/java/lang目录下 | 使用UserClassLoader加载该类 | √
+
+
+已知问题：
+1. 加载java.lang.String时，由于ext在boot目录下，所以加载器还是boot加载器，但总体没有太大影响。解决方法是放弃使用通配符加载器而使用路径加载器
+
 
 ## 2.3 双亲委派机制的实现？
-BootClassLoader->ExtClassLoader->UserClassLoader
+启动顺序为：BootClassLoader->ExtClassLoader->UserClassLoader
 
 优先加载Boot，其次Ext，最后User：
 
@@ -244,4 +269,22 @@ if err != nil {
 
 这种方式的缺陷很明显：不支持自定义类加载器器
 
-JVM官方的实现是用递归的方式，但我这个是属于1.0版本，所以先完成再优化。
+JVM官方的实现是用递归的方式，所以我使用递归的写法：
+
+```go
+func (l BaseLoader) ParentLoader(className string) ([]byte, ClassLoader, error, BaseLoader) {
+	if l.hasParent() {
+		data, loader, err, ll := l.ParentClassLoader.ParentLoader(className)
+		if err == nil {
+			return data, loader, err, ll
+		}
+		a, b, c := l.loadClass(className)
+		return a, b, c, l
+	}
+	a, b, c := l.loadClass(className)
+	return a, b, c, l
+}
+```
+
+只要存在父加载器就递归直至最顶层的加载器，然后一层一层的去loadClass，当顶层执行成功则会直接返回信息，执行失败则会回溯至下一层调用下一层的loadClass，如果失败则继续回溯直至成功。
+
