@@ -57,16 +57,17 @@ func CreateWildcardLoader(path string) *WildcardClassLoader {
 
 func (w WildcardClassLoader) LoadClass(className string) ([]byte, ClassLoader, error) {
 	lastDotIndex := strings.LastIndex(className, ".")
-	relativeClassPath := strings.ReplaceAll(className[:lastDotIndex], ".", SEPARATOR)
+	var relativeClassPath string
+	if lastDotIndex != -1 {
+		relativeClassPath = strings.ReplaceAll(className[:lastDotIndex], ".", SEPARATOR)
+	}
+
 	for _, path := range w.dirListPath {
-		if strings.Contains(path, relativeClassPath) {
+		if relativeClassPath != "" && strings.Contains(path, relativeClassPath) {
 			w.loaders = append(w.loaders, CreateLoader(path))
 		}
 	}
 
-	// com.zihua.HelloWorld
-	// [:last] = com.zihua
-	// [last+1:] = HelloWorld
 	var (
 		data []byte = nil
 		err  error  = errors.New("Not fount class exception!")
