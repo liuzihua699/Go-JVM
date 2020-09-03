@@ -26,8 +26,12 @@ func CreateCompositeLoader(pathList string) *ComClassLoader {
 		if fileAbsErr != nil {
 			continue
 		}
-
-		_, err := os.Stat(absPath)
+		var err error
+		if strings.HasSuffix(absPath, "*") {
+			_, err = os.Stat(absPath[:len(absPath)-1])
+		} else {
+			_, err = os.Stat(absPath)
+		}
 		if err == nil {
 			loader := CreateLoader(absPath)
 			ret.loaders = append(ret.loaders, loader)
@@ -43,7 +47,7 @@ func (c ComClassLoader) LoadClass(className string) ([]byte, ClassLoader, error)
 	)
 	for _, loader := range c.loaders {
 		data, _, err = loader.LoadClass(className)
-		if data != nil && err == nil {
+		if err == nil {
 			break
 		}
 	}
