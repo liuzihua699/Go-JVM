@@ -14,9 +14,10 @@ type Cmd struct {
 	globalFlag    bool
 	Args          []string
 	ClassPath     string
-	Class         string
+	ClassName     string
 	BootClassPath string
 	ExtClassPath  string
+	JrePath       string
 }
 
 func (c *Cmd) ParseCmd() *Cmd {
@@ -36,6 +37,7 @@ func (c *Cmd) ParseCmd() *Cmd {
 	flag.StringVar(&c.ClassPath, "cp", USER_CLASS_PATH, "classloader")
 	flag.StringVar(&c.BootClassPath, "Xbootclasspath", BOOTSTRAPE_CLASS_PATH, "print bootstrape classloader")
 	flag.StringVar(&c.ExtClassPath, "Xextclasspath", EXT_CLASS_PATH, "print extension classloader")
+	flag.StringVar(&c.JrePath, "Xjre", JRE, "print jre path")
 	flag.Parse()
 	args := flag.Args()
 
@@ -64,7 +66,7 @@ func (c *Cmd) ParseCmd() *Cmd {
 		os.Exit(0)
 	}
 
-	c.Class = args[0]
+	c.ClassName = args[0]
 	c.Args = args[1:]
 	return c
 }

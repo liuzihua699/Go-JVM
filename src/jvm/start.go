@@ -1,6 +1,7 @@
 package jvm
 
 import (
+	"errors"
 	"fmt"
 	"jvm/classloader"
 	"jvm/commons"
@@ -16,7 +17,7 @@ import (
 func StartJVM() {
 	options := new(commons.Cmd).ParseCmd()
 	fmt.Printf("bootclasspath: %s\nextclasspath: %s\nclasspath: %s \nclass: %s\nargs:%v\n",
-		options.BootClassPath, options.ExtClassPath, options.ClassPath, options.Class, options.Args)
+		options.BootClassPath, options.ExtClassPath, options.ClassPath, options.ClassName, options.Args)
 
 	// TODO 检查启动参数[classloader, class]是否合法
 	// checkOptionPoint(options);
@@ -35,13 +36,14 @@ func StartJVM() {
 		panic("classpath initializer error.")
 	}
 
-	stream, baseloader, err, apploader = classPath.UserClassLoader.ParentLoader(options.Class)
+	stream, baseloader, err, apploader = classPath.UserClassLoader.ParentLoader(options.ClassName)
 	if err != nil {
-		panic(err)
+		panic(errors.New(fmt.Sprintf("ClassName=[%s] loader error, ClassLoader=[%s]\n", options.ClassName, apploader.GetName())))
 	}
 
 	// .TODO 2.进入解析阶段
 	fmt.Println("data: ", stream)
 	fmt.Println("baseloader: ", baseloader.ToString())
 	fmt.Println("apploader: ", apploader.GetName())
+
 }

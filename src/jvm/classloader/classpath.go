@@ -15,7 +15,7 @@ type ClassPath struct {
 func (c *ClassPath) InitClassPath(options commons.Cmd) error {
 	err := errors.New("classpath initializer error!")
 
-	lastDotIndex := strings.LastIndex(options.Class, ".")
+	lastDotIndex := strings.LastIndex(options.ClassName, ".")
 
 	if lastDotIndex != -1 {
 		c.BootClassLoader = CreateAppClassLoader(nil, options.BootClassPath+"\\*", "BootClassLoader")
