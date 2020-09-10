@@ -76,7 +76,6 @@ type ConstantPoolInfo interface {
 }
 
 type ConstantPool struct {
-	Size              uint16
 	ConstantItemInfos []ConstantPoolInfo
 }
 
@@ -111,7 +110,7 @@ func newConstantInfo(tag uint8) ConstantPoolInfo {
 	case CONSTANT_InvokeDynamic:
 		return &ConstantInvokeDynamicInfo{TagInfo: TagInfo{Tag: CONSTANT_InvokeDynamic}}
 	default:
-		panic(errors.New("not fount error: invalid type to async of " + string(tag)))
+		panic(errors.New("not fount tag handle error: invalid type to async of " + string(tag)))
 		return nil
 	}
 }
