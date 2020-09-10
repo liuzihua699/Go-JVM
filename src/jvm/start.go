@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"jvm/class/class_file_commons"
 	"jvm/class/constant_pool"
+	"jvm/class/interfaces"
 	"jvm/classloader"
 	"jvm/commons"
 )
@@ -53,12 +54,19 @@ func StartJVM() {
 	fmt.Printf("minor: %d\n", reader.ReadUint16())
 	fmt.Printf("major: %d\n", reader.ReadUint16())
 
-	// 解析常量池信息
+	// 解析常量池
 	cr := constant_pool.ConstantPoolStructReader{&reader}
-	fmt.Printf("constant_pool: %s\n", cr.ReadConstantPoolInfos())
+	cp_count, cp_infos := cr.ReadConstantPoolInfos()
+	fmt.Println("constant_pool_count: ", cp_count)
+	fmt.Println("constant_pool: ", cp_infos)
 
 	fmt.Printf("access_flags: %X\n", reader.ReadUint16())
 	fmt.Printf("this_class: %X\n", reader.ReadUint16())
 	fmt.Printf("super_class: %X\n", reader.ReadUint16())
-	fmt.Printf("interfaces_count: %X\n", reader.ReadUint16())
+
+	// 解析接口表
+	ir := interfaces.InterfacesStructReader{&cr}
+	i_count, i_infos := ir.ReadInterfacesInfos()
+	fmt.Println("interfaces_count: ", i_count)
+	fmt.Println("interfaces: ", i_infos)
 }
