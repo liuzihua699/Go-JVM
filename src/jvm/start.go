@@ -3,6 +3,8 @@ package jvm
 import (
 	"errors"
 	"fmt"
+	"jvm/class/class_file_commons"
+	"jvm/class/constant_pool"
 	"jvm/classloader"
 	"jvm/commons"
 )
@@ -22,7 +24,7 @@ func StartJVM() {
 	// TODO 检查启动参数[classloader, class]是否合法
 	// checkOptionPoint(options);
 
-	// TODO 1.加载阶段
+	// TODO 1. 加载阶段
 	var (
 		stream     []byte
 		err        error
@@ -41,9 +43,22 @@ func StartJVM() {
 		panic(errors.New(fmt.Sprintf("ClassName=[%s] loader error, ClassLoader=[%s]\n", options.ClassName, apploader.GetName())))
 	}
 
-	// .TODO 2.进入解析阶段
+	// TODO 2. 进入解析阶段
 	fmt.Println("data: ", stream)
-	fmt.Println("baseloader: ", baseloader.ToString())
-	fmt.Println("apploader: ", apploader.GetName())
+	fmt.Printf("baseloader: %s\n", baseloader.ToString())
+	fmt.Printf("apploader: %s\n", apploader.GetName())
 
+	reader := class_file_commons.ClassFileReader{ByteStream: &stream}
+	fmt.Printf("magic: %X\n", reader.ReadUint32())
+	fmt.Printf("minor: %d\n", reader.ReadUint16())
+	fmt.Printf("major: %d\n", reader.ReadUint16())
+
+	// 解析常量池信息
+	cr := constant_pool.ConstantPoolStructReader{&reader}
+	fmt.Printf("constant_pool: %s\n", cr.ReadConstantPoolInfos())
+
+	fmt.Printf("access_flags: %X\n", reader.ReadUint16())
+	fmt.Printf("this_class: %X\n", reader.ReadUint16())
+	fmt.Printf("super_class: %X\n", reader.ReadUint16())
+	fmt.Printf("interfaces_count: %X\n", reader.ReadUint16())
 }
