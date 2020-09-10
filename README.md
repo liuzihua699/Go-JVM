@@ -402,3 +402,13 @@ CONSTANT_InvokeDynamic	|18
 2. java.lang.Integer
 3. java.lang.Class
 4. java.lang.ClassLoader
+
+## 3.4 接口表的定义与设计
+接口表在官方定义中是一个u2数组，也就是无需什么特殊的数据结构来处理，使用uint16即可。
+
+具体读取代码请参考(jvm/class/interfaces/interfaces_reader.go)
+## 3.5 字段表的定义与设计
+
+
+## 3.6 方法表的定义与设计
+## 3.7 参数表的定义与设计
