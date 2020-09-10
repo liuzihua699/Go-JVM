@@ -79,6 +79,7 @@ func (l BaseLoader) isNotReady() bool {
 func (l BaseLoader) setName(n string) {
 	l.name = n
 }
+
 func (l BaseLoader) GetName() string {
 	return l.name
 }
@@ -91,7 +92,7 @@ func (l BaseLoader) loadClass(className string) ([]byte, ClassLoader, error) {
 	return l.currentLoader.LoadClass(className)
 }
 
-// 使用委派机制的类加载器加载
+// 委派机制的类加载器加载
 func (l BaseLoader) ParentLoader(className string) ([]byte, ClassLoader, error, BaseLoader) {
 	if l.hasParent() {
 		data, loader, err, ll := l.ParentClassLoader.ParentLoader(className)
