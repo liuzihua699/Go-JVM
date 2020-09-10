@@ -44,7 +44,7 @@ func GetDevOptions() JVMOption {
 		Author:     "zihua",
 		Version:    "0.0.4",
 		Start_time: "2020/8/31",
-		Last_time:  "2020/9/3",
+		Last_time:  "2020/9/10",
 		Mode:       dev,
 		DevLog: map[string]Log{
 			"2020/8/31": {
@@ -62,6 +62,10 @@ func GetDevOptions() JVMOption {
 			"2020/9/3": {
 				version:  "0.0.4",
 				describe: "应用层类加载器的整合",
+			},
+			"2020/9/10": {
+				version:  "0.0.5",
+				describe: "9/9常量池解析完毕，9/10更正了一些代码逻辑使之正确解析常量池",
 			},
 		},
 	}

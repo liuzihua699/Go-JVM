@@ -10,6 +10,7 @@
 -global_config | 输出全局配置| √
 -Xbootclasspath | 指定启动类路径 | √
 -Xextclasspath | 指定扩展类路径 | √
+-Xjre|指定jre目录|√
 -cp %classpath% %class% %args% 或 -classpath| 加载字节码文件| √
 %class% | 以默认的类路径加载字节码文件 | √
 
@@ -229,7 +230,7 @@ WildcardClassLoader会扫描目录并加载类。
 所以最终的加载公式为：
 
 ```
-composite(wildcard("%JAVA_HOME%/jre/lib"), wildcard("%JAVA_HOME%/jre/lib/ext"), dir("%classpath%"))
+pathlist = composite(wildcard("%JAVA_HOME%/jre/lib"), wildcard("%JAVA_HOME%/jre/lib/ext"), dir("%classpath%"))
 ```
 
 0.0.3版本的程序通过了如下测试(已在程序中打包)：
@@ -245,8 +246,9 @@ composite(wildcard("%JAVA_HOME%/jre/lib"), wildcard("%JAVA_HOME%/jre/lib/ext"), 
 -cp T:\\jvm-test java.lang.String | String.class放至user/java/lang目录下 | 使用UserClassLoader加载该类 | √
 
 
-已知问题：
+目前已知问题：
 1. 加载java.lang.String时，由于ext在boot目录下，所以加载器还是boot加载器，但总体没有太大影响。解决方法是放弃使用通配符加载器而使用路径加载器
+2. 如果不指定classpath不确定会不会有什么影响
 
 
 ## 2.3 双亲委派机制的实现？
@@ -288,3 +290,115 @@ func (l BaseLoader) ParentLoader(className string) ([]byte, ClassLoader, error, 
 
 只要存在父加载器就递归直至最顶层的加载器，然后一层一层的去loadClass，当顶层执行成功则会直接返回信息，执行失败则会回溯至下一层调用下一层的loadClass，如果失败则继续回溯直至成功。
 
+# 3. 字节码的设计
+## 3.1 字节码规范
+在Oracle的官方《Java虚拟机规范》中描述了几点：
+
+具体可以翻[原文档](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html)Chapter4。
+
+一个类文件由8位字节流组成，通过连续读取2、4和8个连续的8位字节来构造16位、32位和64位量，多字节数据存储以big-endian的方式存储。
+
+官方定义ClassFile格式为：
+```c
+ClassFile {
+    u4             magic;
+    u2             minor_version;
+    u2             major_version;
+    u2             constant_pool_count;
+    cp_info        constant_pool[constant_pool_count-1];
+    u2             access_flags;
+    u2             this_class;
+    u2             super_class;
+    u2             interfaces_count;
+    u2             interfaces[interfaces_count];
+    u2             fields_count;
+    field_info     fields[fields_count];
+    u2             methods_count;
+    method_info    methods[methods_count];
+    u2             attributes_count;
+    attribute_info attributes[attributes_count];
+}
+```
+
+字段含义如下：
+
+字段名 | 描述
+---|---
+magic | 为ClassFile提供标识，为固定值0xCAFEBABE
+minor_version | ClassFile最小版本号，JVM版本低于minor则会抛异常
+major_version | ClassFile最大版本号，JVM版本高于major则会抛异常
+constant_pool_count | consstant_pool的数量
+constant_pool | 用来表示各种字符串常量、类、接口名、字段名和其他常量。下标从0开始。
+access_flags | 访问标志，标识类或接口的访问权限，它代表当前常量池中所有参数的flag(均为access_flags)，具体值请看Chapter4中的参数详解
+this_class | 这个值必须在常量池constatn_pool中索引，而且必须为CONSTANT_Class_info结构体。这个字段代表当前类或接口的类文件。
+super_class | 这个字段要么为0，要么为constatn_pool中的有效索引，不为0则必须为CONSTAN_Class_info结构体表示为当前类直接的父类。直接超类不允许被设置ACC_FINAL
+interface_count | interface[]的数量
+interface[] | 可以在contant_pool中找到索引
+
+
+## 3.2 字节码定义与设计
+构成class的单位是字节，可以把整个class文件当做字节流处理。
+
+JVM规范中对字节码的定义是大端(big-endain)的方式，所以在go中定义如下接口读取字节流：
+
+```go
+type Reader interface {
+	ReadUint8() 			 	uint8 		// 读取1字节，对应java中的bit
+	ReadUint16() 			 	uint16 		// 读取2字节，对应java中的short
+	ReadUint32() 			 	uint32 		// 读取4字节，对应java中的int
+	ReadUint64() 			 	uint64 		// 读取8字节，对应java中的long
+	ReadBytes(len uint32) 		[]byte 		// 读取定长字节数
+	Clear()
+}
+```
+
+
+## 3.3 常量池的定义与设计
+`constant_pool`字段是由以下结构组成：
+```
+cp_info {
+    u1 tag;
+    u1 info[];
+}
+```
+其中tag可以为以下的值，并表示其字面的含义：
+
+Constant Type |	Value
+---|---
+CONSTANT_Class	|7
+CONSTANT_Fieldref|	9
+CONSTANT_Methodref	|10
+CONSTANT_InterfaceMethodref	|11
+CONSTANT_String	|8
+CONSTANT_Integer|	3
+CONSTANT_Float|	4
+CONSTANT_Long|	5
+CONSTANT_Double	|6
+CONSTANT_NameAndType|	12
+CONSTANT_Utf8|	1
+CONSTANT_MethodHandle|	15
+CONSTANT_MethodType	|16
+CONSTANT_InvokeDynamic	|18
+
+
+读取常量池时，会先读入1字节的`tag`，然后根据tag的值读取不同的结构体，最后组成的cp_info数组为常量池的组成。
+
+由于类型太多(14个)，所以我不会全部放出来占位置，具体情况感兴趣的可以去[官网](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.4.1)4.4开始查看常量池结构。
+
+我的实现思路如下：
+1. 定义tag结构体对应的handler，具体见(jvm/class/constant_pool/constant_pool.go)
+2. 定义常量池reader，具体见(jvm/class/constant_pool/constant_pool_reader.go)
+3. 定义tag处理器，具体见(jvm/class/constant_pool/constant_*_info.go)
+
+在解析常量池的过程中遇到了问题，比如在解析java.lanng.String的时候，会提示异常，经过debug追踪，问题发生在无法解析tag，因为此时读取到的tag为0。所以找到的hadnle为nil，所以报错了。
+
+经过一些人的提示，发现解析常量池需要注意2个点：
+1. 常量池的实际大小比constant_pool_size要小1
+2. Double和Long实际要占2个位置，也就是说如果遇到Double和Long的tag，它们的下一个位置应该为nil且解析的size总长也要-1
+
+
+修改代码后我重新测试了如下类的解析，均成功：
+1. java.lang.String
+2. java.lang.Integer
+3. java.lang.Class
+4. java.lang.ClassLoader
