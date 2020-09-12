@@ -77,6 +77,7 @@ type ConstantPoolInfo interface {
 
 type ConstantPool struct {
 	ConstantItemInfos []ConstantPoolInfo
+	Utf8Map           map[uint16]string
 }
 
 func newConstantInfo(tag uint8) ConstantPoolInfo {
@@ -115,10 +116,15 @@ func newConstantInfo(tag uint8) ConstantPoolInfo {
 	}
 }
 
-//func GetCpInfoHandle(tag uint8) ConstantPoolInfo {
-//	ret := CONSTANT_POOL_MAP[tag]
-//	if ret == nil {
-//		panic(errors.New("runtime error: invalid memory address or nil pointer dereference"))
-//	}
-//	return ret
-//}
+var fileConstantPool *ConstantPool
+
+func setFileConstantPool(pool *ConstantPool) {
+	fileConstantPool = pool
+}
+
+func GetFileConstantPool() *ConstantPool {
+	if fileConstantPool == nil {
+		panic(errors.New("runtime error: class file constant pool has not initializer."))
+	}
+	return fileConstantPool
+}

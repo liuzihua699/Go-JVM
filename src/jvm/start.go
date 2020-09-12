@@ -3,9 +3,12 @@ package jvm
 import (
 	"errors"
 	"fmt"
+	"jvm/class/attribute"
 	"jvm/class/class_file_commons"
 	"jvm/class/constant_pool"
+	fields "jvm/class/fields"
 	"jvm/class/interfaces"
+	methods "jvm/class/methods"
 	"jvm/classloader"
 	"jvm/commons"
 )
@@ -69,4 +72,22 @@ func StartJVM() {
 	i_count, i_infos := ir.ReadInterfacesInfos()
 	fmt.Println("interfaces_count: ", i_count)
 	fmt.Println("interfaces: ", i_infos)
+
+	// 解析字段表
+	fr := fields.FieldsStructReader{&ir}
+	f_count, f_infos := fr.ReadFieldsInfos()
+	fmt.Println("fields_count: ", f_count)
+	fmt.Println("fields: ", f_infos)
+
+	// 解析方法表
+	mr := methods.MethodsStructReader{&fr}
+	m_count, m_infos := mr.ReadMethodsInfos()
+	fmt.Println("methods_count: ", m_count)
+	fmt.Println("methods: ", m_infos)
+
+	// 解析类参数表
+	ar := attribute.AttributesStructReader{&mr}
+	a_count, a_infos := ar.ReadAttributeInfos()
+	fmt.Println("attributes_count: ", a_count)
+	fmt.Println("attributes: ", a_infos)
 }

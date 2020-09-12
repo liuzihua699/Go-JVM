@@ -1,6 +1,10 @@
 package class
 
-import "jvm/class/constant_pool"
+import (
+	"jvm/class/constant_pool"
+	fields "jvm/class/fields"
+	methods "jvm/class/methods"
+)
 
 /*
 ClassFile {
@@ -28,17 +32,17 @@ type ClassFile struct {
 	minjorVersion     uint16
 	majorVersion      uint16
 	constantPoolCount uint16
-	constantPool      constant_pool.ConstantPool
+	constantPool      *constant_pool.ConstantPool
 	accessFlags       uint16
 	thisClass         uint16
 	superClass        uint16
 	interfacesCount   uint16
 	interfaces        []uint16
 	fieldsCount       uint16
-	//fields            []*MemberInfo
-	methodsCount uint16
-	//methods           []*MemberInfo
-	attributesCount uint16
+	fields            *fields.Fields
+	methodsCount      uint16
+	methods           *[]methods.Methods
+	attributesCount   uint16
 	//attributes 			[]*AttributeInfo
 }
 
