@@ -52,7 +52,17 @@ func newAttributeInfo(info AttributeInfo) AttrInfo {
 	case LineNumberTable:
 		return &LineNumberTable_attribute{AttributeInfo: info}
 	case StackMapTable:
-		return nil
+		return &StackMapTable_attribute{AttributeInfo: info}
+	case Exceptions:
+		return &Exceptions_attribute{AttributeInfo: info}
+	case Deprecated:
+		return &Deprecated_attribute{AttributeInfo: info}
+	case RuntimeVisibleAnnotations:
+		return &RuntimeVisibleAnnotations_attribute{AttributeInfo: info}
+	case SourceFile:
+		return &SourceFile_attribute{AttributeInfo: info}
+	case InnerClasses:
+		return &InnerClasses_attribute{AttributeInfo: info}
 	default:
 		panic(errors.New("runtime error: can't find implemented attribute " + name))
 		return nil
