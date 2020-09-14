@@ -79,6 +79,10 @@ func GetDevOptions() JVMOption {
 				version:  "0.0.7",
 				describe: "解析功能实现完毕",
 			},
+			"2020/9/14": {
+				version:  "0.0.8",
+				describe: "对attributes做code-review",
+			},
 		},
 	}
 }
