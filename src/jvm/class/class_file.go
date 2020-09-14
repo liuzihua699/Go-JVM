@@ -1,6 +1,7 @@
 package class
 
 import (
+	"jvm/class/attribute"
 	"jvm/class/constant_pool"
 	fields "jvm/class/fields"
 	methods "jvm/class/methods"
@@ -32,18 +33,18 @@ type ClassFile struct {
 	minjorVersion     uint16
 	majorVersion      uint16
 	constantPoolCount uint16
-	constantPool      *constant_pool.ConstantPool
+	constantPool      constant_pool.ConstantPool
 	accessFlags       uint16
 	thisClass         uint16
 	superClass        uint16
 	interfacesCount   uint16
 	interfaces        []uint16
 	fieldsCount       uint16
-	fields            *fields.Fields
+	fields            fields.Fields
 	methodsCount      uint16
-	methods           *[]methods.Methods
+	methods           methods.Methods
 	attributesCount   uint16
-	//attributes 			[]*AttributeInfo
+	attributes        attribute.Attributes
 }
 
 // 字节码校验
