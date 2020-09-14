@@ -407,8 +407,192 @@ CONSTANT_InvokeDynamic	|18
 接口表在官方定义中是一个u2数组，也就是无需什么特殊的数据结构来处理，使用uint16即可。
 
 具体读取代码请参考(jvm/class/interfaces/interfaces_reader.go)
-## 3.5 字段表的定义与设计
 
+## 3.5 字段表的定义与设计
+2字节表示字段表的数量，剩余为一个filed结构体
+
+```
+field_info {
+	u2             access_flags;
+	u2             name_index;
+	u2             descriptor_index;
+	u2             attributes_count;
+	attribute_info attributes[attributes_count];
+}
+```
+
+实现代码请参考(jvm/class/fields/*.go)
+
+
+其中attribute_info表示属性表，这部分请参考属性表的设计
 
 ## 3.6 方法表的定义与设计
-## 3.7 参数表的定义与设计
+代码参考(jvm/methods/*.go)
+
+2字节表示方法表数量，剩余为一个method结构体：
+
+```
+method_info {
+    u2             access_flags;
+    u2             name_index;
+    u2             descriptor_index;
+    u2             attributes_count;
+    attribute_info attributes[attributes_count];
+}
+```
+
+其中attribute_info表示属性表，这部分请参考属性表的设计
+
+
+
+
+## 3.7 属性表的定义与设计
+
+代码参考(jvm/attributes/*.go)
+
+
+属性表结构体非常麻烦，官方对其大致划分如下：
+```
+attribute_info {
+    u2 attribute_name_index;
+    u4 attribute_length;
+    u1 info[attribute_length];
+}
+```
+
+简单的说，我可以读取2字节的index，这个index在常量池中是一个utf8的索引，我们可以获取这个index对应的值，然后读取4字节长度，最后的info装的是length这么长的字节数组。
+
+如果只是装字节数组那程序非常好写，直接ReadBytes(attribute_length)即可，但这个info虽然是字节数组，但其也是一个数据类型，官方对info定义了23种类型，info结构体的解析非常之复杂，我简单的说一下我解析info中的Code和StackMapTable的思路：
+
+### Code
+官方对Code结构体定义如下：
+
+```
+Code_attribute {
+    u2 attribute_name_index;
+    u4 attribute_length;
+    u2 max_stack;
+    u2 max_locals;
+    u4 code_length;
+    u1 code[code_length];
+    u2 exception_table_length;
+    {   u2 start_pc;
+        u2 end_pc;
+        u2 handler_pc;
+        u2 catch_type;
+    } exception_table[exception_table_length];
+    u2 attributes_count;
+    attribute_info attributes[attributes_count];
+}
+```
+
+前面的字段均为u2或u4，之后会有一个异常表的结构体(ExceptionTable)
+
+我定义异常表的Read方法，然后实现，在需要读取的时候直接调用即可，以下可供参考：
+
+```go
+type Code_attribute struct {
+	AttributeNameIndex   uint16
+	AttributeLength      uint32
+	MaxStrack            uint16
+	MaxLocals            uint16
+	CodeLength           uint32
+	Code                 []byte
+	ExceptionTableLength uint16
+	ExceptionTable       []ExceptionTable
+	AttributesCount      uint16
+	Attributes           Attributes
+}
+
+type ExceptionTable struct {
+	StartPc   uint16
+	EndPc     uint16
+	HandlerPc uint16
+	CatchType uint16
+}
+
+func (e *ExceptionTable) readExceptionTable(reader class_file_commons.Reader) ExceptionTable {
+	e.StartPc = reader.ReadUint16()
+	e.EndPc = reader.ReadUint16()
+	e.HandlerPc = reader.ReadUint16()
+	e.CatchType = reader.ReadUint16()
+	return *e
+}
+
+func (c *Code_attribute) ReadAttrInfo(reader class_file_commons.Reader) AttrInfo {
+	c.MaxStrack = reader.ReadUint16()
+	c.MaxLocals = reader.ReadUint16()
+	c.CodeLength = reader.ReadUint32()
+	c.Code = reader.ReadBytes(c.CodeLength)
+	c.ExceptionTableLength = reader.ReadUint16()
+	size := c.ExceptionTableLength
+	for i := 0; i < int(size); i++ {
+		c.ExceptionTable = append(c.ExceptionTable, new(ExceptionTable).readExceptionTable(reader))
+	}
+	ar := AttributesStructReader{reader}
+	a_count, a_infos := ar.ReadAttributeInfos()
+	c.AttributesCount = a_count
+	c.Attributes = *a_infos
+	return c
+}
+```
+
+### StackMapTable
+关于StackMapTable的结构类型比较复杂，代码量也是其他结构体的3倍左右，因为其子类型太多了
+
+官方对StackMapTable定义如下：
+
+```
+StackMapTable_attribute {
+    u2              attribute_name_index;
+    u4              attribute_length;
+    u2              number_of_entries;
+    stack_map_frame entries[number_of_entries];
+}
+```
+
+其中stack_map_frame定义如下：
+
+```
+union stack_map_frame {
+    same_frame; // 0-63
+    same_locals_1_stack_item_frame; // 64-127
+    same_locals_1_stack_item_frame_extended; // 247
+    chop_frame; // 248-250
+    same_frame_extended; // 251
+    append_frame; // 252-254
+    full_frame; // 255
+}
+```
+
+可以看到是一个联合体，也就是说这个stack_map_frame之后还需要再次定义结构体，比如same_frame、full_frame等等，这些官网皆有说明，摘取一个简单的：
+
+```
+same_frame {
+    u1 frame_type = SAME; /* 0-63 */
+}
+```
+
+这个意思表示当偏移值为0-63时，stack_map_frame为same_frame类型。这个偏移值由第一个字节表示。
+
+所以思路就是先读一个字节，然后判断这个字节的范围确定对应的结构体类型。
+
+但其实之后还有一个结构体：VerificationTypeInfo，定义如下：
+
+```
+union verification_type_info {
+    Top_variable_info; // 0
+    Integer_variable_info; // 1
+    Float_variable_info; // 2
+    Long_variable_info; // 4
+    Double_variable_info; // 3
+    Null_variable_info; // 5
+    UninitializedThis_variable_info; // 6
+    Object_variable_info; // 7
+    Uninitialized_variable_info; // 8
+}
+```
+
+可以看到还是联合体。。。所以其实这一个StackMapTable就需要定义26种数据类型，这对于go来说着实不太友好，因为go不面向对象，但我经过3天的思考和对代码的review，将代码设计成可控的形式了，具体实现可以参考(jvm/class/attribute/attr_info_StackMapTable.go)。
+
+用这个方法我可以在我自己的维度中解决go不面向对象的问题。
