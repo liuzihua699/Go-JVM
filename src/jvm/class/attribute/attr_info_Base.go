@@ -1,7 +1,12 @@
 package attribute
 
-import "jvm/class/class_file_commons"
+import (
+	"jvm/class/class_file_commons"
+)
 
+/**
+The attribute reader not found format in implemented attribute-table, used it.
+*/
 type Default_attribute struct {
 	AttributeNameIndex uint16
 	AttributeLength    uint32

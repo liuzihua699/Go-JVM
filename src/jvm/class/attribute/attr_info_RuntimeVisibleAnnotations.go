@@ -29,20 +29,19 @@ func (r *RuntimeVisibleAnnotations_attribute) ReadAttrInfo(reader class_file_com
 	return r
 }
 
+/**
+annotation {
+    u2 type_index;
+    u2 num_element_value_pairs;
+    {   u2            element_name_index;
+        element_value value;
+    } element_value_pairs[num_element_value_pairs];
+}
+*/
 type Annotation struct {
 	TypeIndex            uint16
 	NumElementValuePairs uint16
 	ElementValuePairs    []ElementValuePair
-}
-
-type ElementValuePair struct {
-	ElementNameIndex uint16
-	Value            ElementValue
-}
-
-type ElementValue struct {
-	Tag   uint8
-	Value UnionElementValue
 }
 
 func (a *Annotation) readAnnoation(reader class_file_commons.Reader) Annotation {
@@ -55,10 +54,46 @@ func (a *Annotation) readAnnoation(reader class_file_commons.Reader) Annotation 
 	return *a
 }
 
+/**
+element_value_pair {
+	u2 element_name_index
+	element_value value
+}
+*/
+type ElementValuePair struct {
+	ElementNameIndex uint16
+	Value            ElementValue
+}
+
 func (e *ElementValuePair) readElementPair(reader class_file_commons.Reader) ElementValuePair {
 	e.ElementNameIndex = reader.ReadUint16()
 	e.Value = new(ElementValue).readElementValue(reader)
 	return *e
+}
+
+/**
+element_value {
+    u1 tag;
+    union {
+        u2 const_value_index;
+
+        {   u2 type_name_index;
+            u2 const_name_index;
+        } enum_const_value;
+
+        u2 class_info_index;
+
+        annotation annotation_value;
+
+        {   u2            num_values;
+            element_value values[num_values];
+        } array_value;
+    } value;
+}
+*/
+type ElementValue struct {
+	Tag   uint8
+	Value UnionElementValue
 }
 
 func (e *ElementValue) readElementValue(reader class_file_commons.Reader) ElementValue {
@@ -102,7 +137,7 @@ func newUnionElementValue(tag uint8) UnionElementValue {
 	case '[':
 		return &arrayValue{Tag: tag}
 	}
-	panic(errors.New("runtime error: not found this tag, please watch document" + string(tag)))
+	panic(errors.New("runtime error: not found this tag, please watch document , tag = " + string(tag)))
 	return nil
 }
 

@@ -25,80 +25,80 @@ type AttrInfo interface {
 }
 
 const (
-	ConstantValue                        = "ConstantValue"
-	Code                                 = "Code"
-	StackMapTable                        = "StackMapTable"
-	Exceptions                           = "Exceptions"
-	InnerClasses                         = "InnerClasses"
-	EnclosingMethod                      = "EnclosingMethod"
-	Synthetic                            = "Synthetic"
-	Signature                            = "Signature"
-	SourceFile                           = "SourceFile"
-	SourceDebugExtension                 = "SourceDebugExtension"
-	LineNumberTable                      = "LineNumberTable"
-	LocalVariableTable                   = "LocalVariableTable"
-	LocalVariableTypeTable               = "LocalVariableTypeTable"
-	Deprecated                           = "Deprecated"
-	RuntimeVisibleAnnotations            = "RuntimeVisibleAnnotations"
-	RuntimeInvisibleAnnotations          = "RuntimeInvisibleAnnotations"
-	RuntimeVisibleParameterAnnotations   = "RuntimeVisibleParameterAnnotations"
-	RuntimeInvisibleParameterAnnotations = "RuntimeInvisibleParameterAnnotations"
-	RuntimeVisibleTypeAnnotations        = "RuntimeVisibleTypeAnnotations"
-	RuntimeInvisibleTypeAnnotations      = "RuntimeInvisibleTypeAnnotations"
-	AnnotationDefault                    = "AnnotationDefault"
-	BootstrapMethods                     = "BootstrapMethods"
-	MethodParameters                     = "MethodParameters"
+	CONSTANT_VALUE                           = "ConstantValue"
+	CODE                                     = "Code"
+	STACK_MAP_TABLE                          = "StackMapTable"
+	EXCEPTIONS                               = "Exceptions"
+	INNER_CLASSES                            = "InnerClasses"
+	ENCLOSING_METHOD                         = "EnclosingMethod"
+	SYNTHETIC                                = "Synthetic"
+	SIGNATURE                                = "Signature"
+	SOURCE_FILE                              = "SourceFile"
+	SOURCE_DEBUG_EXTENSION                   = "SourceDebugExtension"
+	LINE_NUMBER_TABLE                        = "LineNumberTable"
+	LOCAL_VARIABLE_TABLE                     = "LocalVariableTable"
+	LOCAL_VARIABLE_TYPE_TABLE                = "LocalVariableTypeTable"
+	DEPRECATED                               = "Deprecated"
+	RUNTIME_VISIBLE_ANNOATIONS               = "RuntimeVisibleAnnotations"
+	RUNTIME_INVISIBLE_ANNOTATIONS            = "RuntimeInvisibleAnnotations"
+	RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS    = "RuntimeVisibleParameterAnnotations"
+	RUNTIME_INVISIBLE_PARAMETER_ANNOTAATIONS = "RuntimeInvisibleParameterAnnotations"
+	RUNTIME_VISIBLE_TYPE_ANNOTATIONS         = "RuntimeVisibleTypeAnnotations"
+	RUNTIME_INVISIBLE_TYPE_ANNOTATIONS       = "RuntimeInvisibleTypeAnnotations"
+	ANNOTATION_DEFAULT                       = "AnnotationDefault"
+	BOOTSTRAP_METHODS                        = "BootstrapMethods"
+	METHOD_PARAMETERS                        = "MethodParameters"
 )
 
 func newAttributeInfo(attrNameIndex uint16, attrLength uint32) AttrInfo {
 	name := constant_pool.GetFileConstantPool().Utf8Map[attrNameIndex]
 	switch name {
-	case ConstantValue:
+	case CONSTANT_VALUE:
 		return &ConstantValue_attribute{
 			AttributeNameIndex: attrNameIndex,
 			AttributeLength:    attrLength,
 		}
-	case Signature:
+	case SIGNATURE:
 		return &Signature_attribute{
 			AttributeNameIndex: attrNameIndex,
 			AttributeLength:    attrLength,
 		}
-	case Code:
+	case CODE:
 		return &Code_attribute{
 			AttributeNameIndex: attrNameIndex,
 			AttributeLength:    attrLength,
 		}
-	case LineNumberTable:
+	case LINE_NUMBER_TABLE:
 		return &LineNumberTable_attribute{
 			AttributeNameIndex: attrNameIndex,
 			AttributeLength:    attrLength,
 		}
-	case StackMapTable:
+	case STACK_MAP_TABLE:
 		return &StackMapTable_attribute{
 			AttributeNameIndex: attrNameIndex,
 			AttributeLength:    attrLength,
 		}
-	case Exceptions:
+	case EXCEPTIONS:
 		return &Exceptions_attribute{
 			AttributeNameIndex: attrNameIndex,
 			AttributeLength:    attrLength,
 		}
-	case Deprecated:
+	case DEPRECATED:
 		return &Deprecated_attribute{
 			AttributeNameIndex: attrNameIndex,
 			AttributeLength:    attrLength,
 		}
-	case RuntimeVisibleAnnotations:
+	case RUNTIME_VISIBLE_ANNOATIONS:
 		return &RuntimeVisibleAnnotations_attribute{
 			AttributeNameIndex: attrNameIndex,
 			AttributeLength:    attrLength,
 		}
-	case SourceFile:
+	case SOURCE_FILE:
 		return &SourceFile_attribute{
 			AttributeNameIndex: attrNameIndex,
 			AttributeLength:    attrLength,
 		}
-	case InnerClasses:
+	case INNER_CLASSES:
 		return &InnerClasses_attribute{
 			AttributeNameIndex: attrNameIndex,
 			AttributeLength:    attrLength,
