@@ -1,7 +1,7 @@
 package attribute
 
 import (
-	"errors"
+	"fmt"
 	"jvm/class/class_file_commons"
 	"jvm/class/constant_pool"
 )
@@ -104,8 +104,12 @@ func newAttributeInfo(attrNameIndex uint16, attrLength uint32) AttrInfo {
 			AttributeLength:    attrLength,
 		}
 	default:
-		panic(errors.New("runtime error: can't find implemented attribute " + name))
-		return nil
+		//panic(errors.New("runtime error: can't find implemented attribute " + name))
+		fmt.Errorf("runtime warning: can't find implemented attribute " + name)
+		return &Default_attribute{
+			AttributeNameIndex: attrNameIndex,
+			AttributeLength:    attrLength,
+		}
 	}
 }
 
