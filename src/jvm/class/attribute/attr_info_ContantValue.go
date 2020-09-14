@@ -3,7 +3,8 @@ package attribute
 import "jvm/class/class_file_commons"
 
 type ConstantValue_attribute struct {
-	AttributeInfo
+	AttributeNameIndex uint16
+	AttributeLength    uint32
 	ConstantValueIndex uint16
 }
 

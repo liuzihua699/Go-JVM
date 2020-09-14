@@ -10,7 +10,7 @@ func (fr *AttributesStructReader) ReadAttributeInfos() (uint16, *Attributes) {
 	ret := new(Attributes)
 	size := fr.ReadUint16()
 	for i := 0; i < int(size); i++ {
-		ret.Attributes = append(ret.Attributes, *new(AttributeInfo).ReadAttr(fr))
+		ret.Attributes = append(ret.Attributes, ReadAttributeInfo(fr))
 	}
 	return size, ret
 }

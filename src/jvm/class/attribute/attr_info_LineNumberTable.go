@@ -3,7 +3,8 @@ package attribute
 import "jvm/class/class_file_commons"
 
 type LineNumberTable_attribute struct {
-	AttributeInfo
+	AttributeNameIndex    uint16
+	AttributeLength       uint32
 	LineNumberTableLength uint16
 	LineNumberTable       []LineNumberTable1
 }

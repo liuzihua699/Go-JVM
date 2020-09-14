@@ -5,7 +5,8 @@ import (
 )
 
 type Code_attribute struct {
-	AttributeInfo
+	AttributeNameIndex   uint16
+	AttributeLength      uint32
 	MaxStrack            uint16
 	MaxLocals            uint16
 	CodeLength           uint32
@@ -13,7 +14,7 @@ type Code_attribute struct {
 	ExceptionTableLength uint16
 	ExceptionTable       []ExceptionTable
 	AttributesCount      uint16
-	AttrInfo             Attributes
+	Attributes           Attributes
 }
 
 type ExceptionTable struct {
@@ -41,6 +42,6 @@ func (c *Code_attribute) ReadAttrInfo(reader class_file_commons.Reader) AttrInfo
 	ar := AttributesStructReader{reader}
 	a_count, a_infos := ar.ReadAttributeInfos()
 	c.AttributesCount = a_count
-	c.AttrInfo = *a_infos
+	c.Attributes = *a_infos
 	return c
 }

@@ -14,9 +14,10 @@ RuntimeVisibleAnnotations_attribute {
 }
 */
 type RuntimeVisibleAnnotations_attribute struct {
-	AttributeInfo
-	NumAnnotations uint16
-	Annoations     []Annotation
+	AttributeNameIndex uint16
+	AttributeLength    uint32
+	NumAnnotations     uint16
+	Annoations         []Annotation
 }
 
 func (r *RuntimeVisibleAnnotations_attribute) ReadAttrInfo(reader class_file_commons.Reader) AttrInfo {

@@ -3,7 +3,8 @@ package attribute
 import "jvm/class/class_file_commons"
 
 type Exceptions_attribute struct {
-	AttributeInfo
+	AttributeNameIndex  uint16
+	AttributeLength     uint32
 	NumberOfExceptions  uint16
 	ExceptionIndexTable []uint16 // size of NumberOfExceptions
 }

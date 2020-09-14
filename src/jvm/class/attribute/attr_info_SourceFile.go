@@ -5,8 +5,9 @@ import (
 )
 
 type SourceFile_attribute struct {
-	AttributeInfo
-	SourceFileIndex uint16
+	AttributeNameIndex uint16
+	AttributeLength    uint32
+	SourceFileIndex    uint16
 }
 
 func (s *SourceFile_attribute) ReadAttrInfo(reader class_file_commons.Reader) AttrInfo {

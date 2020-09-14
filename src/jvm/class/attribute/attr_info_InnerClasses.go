@@ -5,9 +5,10 @@ import (
 )
 
 type InnerClasses_attribute struct {
-	AttributeInfo
-	NumberOfClasses uint16
-	Classes         []Classes
+	AttributeNameIndex uint16
+	AttributeLength    uint32
+	NumberOfClasses    uint16
+	Classes            []Classes
 }
 
 type Classes struct {

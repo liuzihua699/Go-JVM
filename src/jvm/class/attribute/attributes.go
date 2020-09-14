@@ -7,9 +7,19 @@ import (
 )
 
 type Attributes struct {
-	Attributes []AttributeInfo
+	Attributes []AttrInfo
 }
 
+/**
+attribute_info {
+	u2 attribute_name_index;
+	u4 attribute_length;
+	u1 info[attribute_length]; // bytes array
+}
+
+see document https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.7.4
+types number of 23.
+*/
 type AttrInfo interface {
 	ReadAttrInfo(reader class_file_commons.Reader) AttrInfo
 }
@@ -40,31 +50,67 @@ const (
 	MethodParameters                     = "MethodParameters"
 )
 
-func newAttributeInfo(info AttributeInfo) AttrInfo {
-	name := constant_pool.GetFileConstantPool().Utf8Map[info.AttributeNameIndex]
+func newAttributeInfo(attrNameIndex uint16, attrLength uint32) AttrInfo {
+	name := constant_pool.GetFileConstantPool().Utf8Map[attrNameIndex]
 	switch name {
 	case ConstantValue:
-		return &ConstantValue_attribute{AttributeInfo: info}
+		return &ConstantValue_attribute{
+			AttributeNameIndex: attrNameIndex,
+			AttributeLength:    attrLength,
+		}
 	case Signature:
-		return &Signature_attribute{AttributeInfo: info}
+		return &Signature_attribute{
+			AttributeNameIndex: attrNameIndex,
+			AttributeLength:    attrLength,
+		}
 	case Code:
-		return &Code_attribute{AttributeInfo: info}
+		return &Code_attribute{
+			AttributeNameIndex: attrNameIndex,
+			AttributeLength:    attrLength,
+		}
 	case LineNumberTable:
-		return &LineNumberTable_attribute{AttributeInfo: info}
+		return &LineNumberTable_attribute{
+			AttributeNameIndex: attrNameIndex,
+			AttributeLength:    attrLength,
+		}
 	case StackMapTable:
-		return &StackMapTable_attribute{AttributeInfo: info}
+		return &StackMapTable_attribute{
+			AttributeNameIndex: attrNameIndex,
+			AttributeLength:    attrLength,
+		}
 	case Exceptions:
-		return &Exceptions_attribute{AttributeInfo: info}
+		return &Exceptions_attribute{
+			AttributeNameIndex: attrNameIndex,
+			AttributeLength:    attrLength,
+		}
 	case Deprecated:
-		return &Deprecated_attribute{AttributeInfo: info}
+		return &Deprecated_attribute{
+			AttributeNameIndex: attrNameIndex,
+			AttributeLength:    attrLength,
+		}
 	case RuntimeVisibleAnnotations:
-		return &RuntimeVisibleAnnotations_attribute{AttributeInfo: info}
+		return &RuntimeVisibleAnnotations_attribute{
+			AttributeNameIndex: attrNameIndex,
+			AttributeLength:    attrLength,
+		}
 	case SourceFile:
-		return &SourceFile_attribute{AttributeInfo: info}
+		return &SourceFile_attribute{
+			AttributeNameIndex: attrNameIndex,
+			AttributeLength:    attrLength,
+		}
 	case InnerClasses:
-		return &InnerClasses_attribute{AttributeInfo: info}
+		return &InnerClasses_attribute{
+			AttributeNameIndex: attrNameIndex,
+			AttributeLength:    attrLength,
+		}
 	default:
 		panic(errors.New("runtime error: can't find implemented attribute " + name))
 		return nil
 	}
+}
+
+func ReadAttributeInfo(reader class_file_commons.Reader) AttrInfo {
+	attrNameIndex := reader.ReadUint16()
+	attrLength := reader.ReadUint32()
+	return newAttributeInfo(attrNameIndex, attrLength).ReadAttrInfo(reader)
 }

@@ -17,7 +17,7 @@ type MemberInfo struct {
 	NameIndex       uint16
 	DescriptorIndex uint16
 	AttributesCount uint16
-	AttributeInfos  []AttributeInfo
+	Attributes      []AttrInfo
 }
 
 func (m *MemberInfo) ReadMem(reader class_file_commons.Reader) *MemberInfo {
@@ -27,7 +27,7 @@ func (m *MemberInfo) ReadMem(reader class_file_commons.Reader) *MemberInfo {
 	m.AttributesCount = reader.ReadUint16()
 	size := int(m.AttributesCount)
 	for i := 0; i < size; i++ {
-		m.AttributeInfos = append(m.AttributeInfos, *new(AttributeInfo).ReadAttr(reader))
+		m.Attributes = append(m.Attributes, ReadAttributeInfo(reader))
 	}
 	return m
 }
