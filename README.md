@@ -1,3 +1,6 @@
+# 项目地址
+https://github.com/zihuaVeryGood/Go-JVM
+
 # 1. 启动选项
 （对于类路径的配置，暂不支持环境变量，仅支持运行的时候指定配置项）
 
@@ -17,6 +20,13 @@
 设计完成
 
 (等到1.0版本开发完毕就会发布releases和tag)
+
+
+新增功能
+支持命令行 | 描述 | 是否实现
+---|---|---
+-p/-print [--all | --trunc] | 打印信息[详细打印 | 截取打印]| √
+
 
 # 2. 类加载功能的设计
 ## 2.1 类加载器的设计
@@ -411,7 +421,7 @@ CONSTANT_InvokeDynamic	|18
 ## 3.5 字段表的定义与设计
 2字节表示字段表的数量，剩余为一个filed结构体
 
-```
+```c
 field_info {
 	u2             access_flags;
 	u2             name_index;
@@ -431,7 +441,7 @@ field_info {
 
 2字节表示方法表数量，剩余为一个method结构体：
 
-```
+```c
 method_info {
     u2             access_flags;
     u2             name_index;
@@ -452,7 +462,8 @@ method_info {
 
 
 属性表结构体非常麻烦，官方对其大致划分如下：
-```
+
+```c
 attribute_info {
     u2 attribute_name_index;
     u4 attribute_length;
@@ -467,7 +478,7 @@ attribute_info {
 ### Code
 官方对Code结构体定义如下：
 
-```
+```c
 Code_attribute {
     u2 attribute_name_index;
     u4 attribute_length;
@@ -542,7 +553,7 @@ func (c *Code_attribute) ReadAttrInfo(reader class_file_commons.Reader) AttrInfo
 
 官方对StackMapTable定义如下：
 
-```
+```c
 StackMapTable_attribute {
     u2              attribute_name_index;
     u4              attribute_length;
@@ -553,7 +564,7 @@ StackMapTable_attribute {
 
 其中stack_map_frame定义如下：
 
-```
+```c
 union stack_map_frame {
     same_frame; // 0-63
     same_locals_1_stack_item_frame; // 64-127
@@ -567,7 +578,7 @@ union stack_map_frame {
 
 可以看到是一个联合体，也就是说这个stack_map_frame之后还需要再次定义结构体，比如same_frame、full_frame等等，这些官网皆有说明，摘取一个简单的：
 
-```
+```c
 same_frame {
     u1 frame_type = SAME; /* 0-63 */
 }
@@ -579,7 +590,7 @@ same_frame {
 
 但其实之后还有一个结构体：VerificationTypeInfo，定义如下：
 
-```
+```c
 union verification_type_info {
     Top_variable_info; // 0
     Integer_variable_info; // 1
@@ -596,3 +607,21 @@ union verification_type_info {
 可以看到还是联合体。。。所以其实这一个StackMapTable就需要定义26种数据类型，这对于go来说着实不太友好，因为go不面向对象，但我经过3天的思考和对代码的review，将代码设计成可控的形式了，具体实现可以参考(jvm/class/attribute/attr_info_StackMapTable.go)。
 
 用这个方法我可以在我自己的维度中解决go不面向对象的问题。
+
+
+## 3.8 解析ClassFile结构
+综上内容，可以实现对一个类结构体的解析
+
+由于参数表数目众多且多数为冗余，我并没有全部实现，未实现我直接读取字节码便于后续处理。
+
+代码参考(jvm/class/class_fil.go)
+
+使用如下参数：
+```
+.\jvm-0.1.0.exe -cp T:\\jvm-test -p --no-trunc java.lang.String aaa bbb
+```
+
+运行后发现输出了字节码的详细格式
+
+# 参考
+- [StackMapTable结构体的解析](https://blog.csdn.net/r77683962/article/details/78877228?utm_medium=distribute.pc_relevant_bbs_down.none-task-blog-baidujs-1.nonecase&depth_1-utm_source=distribute.pc_relevant_bbs_down.none-task-blog-baidujs-1.nonecase)

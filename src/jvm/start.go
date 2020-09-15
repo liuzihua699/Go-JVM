@@ -21,13 +21,10 @@ import (
 */
 func StartJVM() {
 	options := new(commons.Cmd).ParseCmd()
-	fmt.Printf("bootclasspath: %s\nextclasspath: %s\nclasspath: %s \nclass: %s\nargs:%v\n",
-		options.BootClassPath, options.ExtClassPath, options.ClassPath, options.ClassName, options.Args)
 
 	// TODO 检查启动参数[classloader, class]是否合法
 	// checkOptionPoint(options);
 
-	// 1. 加载阶段
 	var (
 		stream     []byte
 		err        error
@@ -36,28 +33,32 @@ func StartJVM() {
 		classPath  classloader.ClassPath = classloader.ClassPath{}
 	)
 
+	// initializer the classpath from user options.
 	err = classPath.InitClassPath(*options)
 	if err != nil {
 		panic("classpath initializer error.")
 	}
 
+	// parent loader to load the class.
 	stream, baseloader, err, apploader = classPath.UserClassLoader.ParentLoader(options.ClassName)
 	if err != nil {
 		panic(errors.New(fmt.Sprintf("ClassName=[%s] loader error, ClassLoader=[%s]\n", options.ClassName, apploader.GetName())))
 	}
 
-	// 2. 解析字节码
+	// parse bytecode to class file format.
 	class, errs := new(class.ClassFile).Parse(stream)
 	if len(errs) != 0 {
 		panic(errs)
 	}
 
-	// 使用策略模式
+	// if print-only mode, that print bytecode class information.
 	if options.PrintFlag {
+		fmt.Printf("bootclasspath: %s\nextclasspath: %s\nclasspath: %s \nclass: %s\nargs:%v\n",
+			options.BootClassPath, options.ExtClassPath, options.ClassPath, options.ClassName, options.Args)
 		fmt.Println("BaseClassLoader: " + baseloader.ToString())
 		fmt.Println("AppClassLoader: " + apploader.GetName())
 		class.PrintClassInfo(!options.PrintModeAll)
 	} else {
-		// 运行main函数
+		// TODO 运行main函数
 	}
 }

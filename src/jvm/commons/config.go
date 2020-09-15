@@ -83,6 +83,10 @@ func GetDevOptions() JVMOption {
 				version:  "0.0.8",
 				describe: "对attributes模块做code-review",
 			},
+			"2020/9/15": {
+				version:  "0.1.0",
+				describe: "添加-p参数输出类文件格式",
+			},
 		},
 	}
 }
