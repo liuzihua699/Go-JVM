@@ -1,6 +1,9 @@
 package attribute
 
-import "jvm/class/class_file_commons"
+import (
+	"jvm/class/class_file_commons"
+	"jvm/class/constant_pool"
+)
 
 /**
 used for Fields、Methods、Interfaces and more than.
@@ -23,4 +26,12 @@ func (m *MemberInfo) ReadMem(reader class_file_commons.Reader) *MemberInfo {
 		m.Attributes = append(m.Attributes, ReadAttributeInfo(reader))
 	}
 	return m
+}
+
+func (m MemberInfo) GetName() string {
+	return constant_pool.GetFileConstantPool().Utf8Map[m.NameIndex]
+}
+
+func (m MemberInfo) GetDescripor() string {
+	return constant_pool.GetFileConstantPool().Utf8Map[m.DescriptorIndex]
 }

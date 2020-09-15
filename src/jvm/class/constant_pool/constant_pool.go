@@ -77,6 +77,7 @@ type ConstantPoolInfo interface {
 
 type ConstantPool struct {
 	ConstantItemInfos []ConstantPoolInfo
+	CpMap             map[uint16]ConstantPoolInfo
 	Utf8Map           map[uint16]string
 }
 
