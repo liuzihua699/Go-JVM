@@ -57,7 +57,8 @@ type ClassFile struct {
 }*/
 
 const (
-	MAGIC = 3405691582
+	MAGIC      = 3405691582
+	BASE_CLASS = 0
 )
 
 // TODO the class file to parse...
@@ -127,8 +128,10 @@ func (c ClassFile) PrintClassInfo(trunc bool) {
 	// 类信息
 	nameIndex := CpPool[c.thisClass].(*CP.ConstantClassInfo).NameIndex
 	fmt.Printf("this class: %s\n", Utf8Pool[nameIndex])
-	nameIndex = CpPool[c.superClass].(*CP.ConstantClassInfo).NameIndex
-	fmt.Printf("super class: %s\n", Utf8Pool[nameIndex])
+	if c.superClass != BASE_CLASS {
+		nameIndex = CpPool[c.superClass].(*CP.ConstantClassInfo).NameIndex
+		fmt.Printf("super class: %s\n", Utf8Pool[nameIndex])
+	}
 
 	// 接口表信息
 	fmt.Println()
