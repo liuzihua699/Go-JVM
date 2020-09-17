@@ -107,36 +107,41 @@ type UnionElementValue interface {
 	ReadUnionElementValue(reader class_file_commons.Reader) UnionElementValue
 }
 
+const (
+	TAG_BYTE            = 'B'
+	TAG_CHAR            = 'C'
+	TAG_DOUBLE          = 'D'
+	TAG_FLOAG           = 'F'
+	TAG_INT             = 'I'
+	TAG_LONG            = 'J'
+	TAG_SHORT           = 'S'
+	TAG_BOOLEAN         = 'Z'
+	TAG_STRING          = 's'
+	TAG_ENUM_TYPE       = 'e'
+	TAG_CLASS           = 'c'
+	TAG_ANNOTATION_TYPE = '@'
+	TAG_ARRAY_TYPE      = '['
+)
+
 // TODO too ugly code, if codereview that neet update ASCII to typename constant, e.g: 'B'=>BYTE
 func newUnionElementValue(tag uint8) UnionElementValue {
+
+	if tag == TAG_BYTE || tag == TAG_CHAR || tag == TAG_DOUBLE || tag == TAG_FLOAG ||
+		tag == TAG_INT || tag == TAG_LONG || tag == TAG_SHORT || tag == TAG_BOOLEAN || tag == TAG_STRING {
+		return &constValueIndex{Tag: tag}
+	}
+
 	switch tag {
-	case 'B':
-		return &constValueIndex{Tag: tag}
-	case 'C':
-		return &constValueIndex{Tag: tag}
-	case 'D':
-		return &constValueIndex{Tag: tag}
-	case 'F':
-		return &constValueIndex{Tag: tag}
-	case 'I':
-		return &constValueIndex{Tag: tag}
-	case 'J':
-		return &constValueIndex{Tag: tag}
-	case 'S':
-		return &constValueIndex{Tag: tag}
-	case 'Z':
-		return &constValueIndex{Tag: tag}
-	case 's':
-		return &constValueIndex{Tag: tag}
-	case 'e':
+	case TAG_ENUM_TYPE:
 		return &enumValueIndex{Tag: tag}
-	case 'c':
+	case TAG_CLASS:
 		return &classInfoIndex{Tag: tag}
-	case '@':
+	case TAG_ANNOTATION_TYPE:
 		return &annotationValue{Tag: tag}
-	case '[':
+	case TAG_ARRAY_TYPE:
 		return &arrayValue{Tag: tag}
 	}
+
 	panic(errors.New("runtime error: not found this tag, please watch document , tag = " + string(tag)))
 	return nil
 }
